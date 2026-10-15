@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CommentMine – turn comments into video ideas</title>
+<meta name="description" content="Paste your audience comments and get themes and video ideas. Runs entirely in your browser.">
+<meta name="theme-color" content="#16171a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CommentMine">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%E2%9B%8F%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+:root{color-scheme:dark;--bg:#16171a;--card:#1f2024;--card2:#272830;--line:#32333b;--text:#f3f3ee;--mute:#9b9da6;--lime:#b6f23a;--limebg:#222c0c;--warn:#f2b84a;--bad:#ff7a7a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.app{max-width:520px;margin:0 auto;padding:18px 16px 104px}
+h1,h2,h3{font-family:ui-serif,"New York",Georgia,serif;font-weight:600;margin:0;letter-spacing:-.01em}
+h1{font-size:30px;line-height:1.15}h2{font-size:22px}h3{font-size:18px}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.logo{font-family:ui-serif,Georgia,serif;font-size:20px;font-weight:600}.logo b{color:var(--lime)}
+.pill{font-size:12px;padding:3px 10px;border-radius:99px;background:var(--card2);color:var(--mute);border:1px solid var(--line);white-space:nowrap}
+.pill.lime{background:var(--limebg);color:var(--lime);border-color:#3a4d12}
+.pill.warn{color:var(--warn);border-color:#5a4720;background:#2a2314}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;margin-top:14px}
+.mute{color:var(--mute)}.sm{font-size:13px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.chip{border:1px solid var(--line);background:var(--card2);color:var(--text);border-radius:99px;padding:8px 14px;font-size:14px;font-family:inherit;cursor:pointer}
+.chip.on{background:var(--lime);color:#14180a;border-color:var(--lime);font-weight:600}
+textarea{width:100%;min-height:210px;margin-top:8px;background:#141518;color:var(--text);border:1px solid var(--line);border-radius:16px;padding:14px;font:16px/1.45 inherit;resize:vertical}
+textarea:focus{outline:2px solid var(--lime);outline-offset:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:14px;padding:13px 18px;font:600 15px inherit;font-family:inherit;cursor:pointer;color:var(--text);background:var(--card2);border:1px solid var(--line)}
+.btn.p{background:var(--lime);color:#14180a;border-color:var(--lime)}
+.btn.w{width:100%}.btn:disabled{opacity:.45}.btn.s{padding:9px 14px;font-size:14px;border-radius:12px}
+.btn.on{background:var(--limebg);color:var(--lime);border-color:#3a4d12}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.row>.btn{flex:1}
+.between{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.bar{height:6px;border-radius:9px;background:var(--card2);overflow:hidden;margin:10px 0}
+.bar i{display:block;height:100%;background:var(--lime);border-radius:9px}
+.quote{border-left:3px solid var(--line);padding:2px 0 2px 10px;margin:8px 0;color:#d6d7dc;font-size:14px}
+.idea{background:var(--card2);border-radius:16px;padding:14px;margin-top:14px;border:1px solid var(--line)}
+.lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);margin-top:10px}
+.hook{color:var(--lime);font-weight:500}
+.nav{position:fixed;left:0;right:0;bottom:0;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));background:rgba(22,23,26,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);z-index:5}
+.nav div{max-width:520px;margin:0 auto;display:flex;gap:6px}
+.nav button{flex:1;background:none;border:0;color:var(--mute);font:500 12px inherit;font-family:inherit;padding:6px;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.nav button.on{color:var(--lime);background:var(--limebg)}
+.nav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.center{text-align:center;padding:36px 12px}
+.spin{width:38px;height:38px;border:3px solid var(--line);border-top-color:var(--lime);border-radius:50%;margin:0 auto 14px;animation:r 1s linear infinite}
+@keyframes r{to{transform:rotate(360deg)}}
+.err{border-color:#5c2c2c}.err h3{color:var(--bad)}
+.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--lime);color:#14180a;padding:10px 18px;border-radius:99px;font-weight:600;font-size:14px;z-index:9;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+.stats{display:flex;gap:8px;margin-top:12px}.stats div{flex:1;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px;text-align:center}
+.stats b{display:block;font-size:22px;color:var(--lime);font-family:ui-serif,Georgia,serif}
+.stats span{font-size:12px;color:var(--mute)}
+.warnbox{background:#2a2314;border:1px solid #5a4720;color:#e8d3a0;border-radius:14px;padding:10px 12px;font-size:13px;margin-top:12px}
+</style></head><body>
+<div class="app"><div class="top"><div class="logo">Comment<b>Mine</b></div><span class="pill" id="badge"></span></div><main id="main"></main></div>
+<nav class="nav"><div>
+<button data-v="home"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/></svg>Home</button>
+<button data-v="analyse"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Analyse</button>
+<button data-v="saved"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg><span id="sc">Saved</span></button>
+</div></nav><div class="toast" id="toast"></div>
+<script>
+const SAMPLE=`How do you get such good lighting in your videos?
+What light are you using? Looks so clean
+Can you do a video on lighting for small rooms?
+Please make a CapCut transitions tutorial
+Can you show how you do the zoom transition?
+Part 2 please! Need the transition breakdown
+My audio always sounds echoey, how do you fix that?
+Audio is my biggest problem, sounds like I'm in a bathroom
+Mic doesn't work with my phone, any tips?
+Love this 😍
+This is so helpful, thank you!
+Saving this for later
+What app do you use to edit?
+What camera or phone do you film on?
+Which phone do you use? The quality is crazy
+My exports always look blurry on TikTok, why?
+Same, my video quality drops after upload
+Could you do a video on how to get started with no budget?
+lol the cat at the end
+The cat stole the show 😂
+How long does it take you to edit one video?
+Tried this and it didn't work for me, the captions are off
+Captions keep going out of sync, help
+Great tips, following!`;
+const PLATS=["YouTube Shorts","TikTok","Instagram Reels","Other"];
+const TL={question:"Recurring question",request:"Audience request",problem:"Common problem",reaction:"Audience reaction",other:"Topic"};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ls={get(){try{return JSON.parse(localStorage.getItem("cm_saved")||"[]")}catch(e){return null}},set(v){try{localStorage.setItem("cm_saved",JSON.stringify(v));return true}catch(e){return false}}};
+let persist=ls.set(ls.get()||[]);
+const S={view:"home",platform:PLATS[0],raw:"",status:"idle",themes:[],comments:[],mode:"",err:"",note:"",demo:false,saved:ls.get()||[],homeErr:""};
+const parse=r=>r.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+let tt;function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),1800)}
+function go(v){S.view=v;render();window.scrollTo(0,0)}
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>go(b.dataset.v));
+
+function render(){
+ document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===S.view));
+ $("sc").textContent=S.saved.length?"Saved ("+S.saved.length+")":"Saved";
+ $("badge").textContent=S.platform;
+ $("main").innerHTML=S.view==="home"?home():S.view==="analyse"?analyse():saved();
+}
+function home(){
+ const n=parse(S.raw).length;
+ return `<h1>Turn comments into your next video.</h1>
+ <p class="mute">Paste comments from your own posts. CommentMine groups them into themes and suggests video ideas, based only on what you paste. <span class="pill lime">Basic local analysis, not AI</span></p>
+ <div class="card"><div class="lbl" style="margin:0">Platform</div><div class="chips">${PLATS.map(p=>`<button class="chip ${p===S.platform?"on":""}" onclick="setP('${p}')">${p}</button>`).join("")}</div>
+ <div class="lbl" style="margin-top:16px">Your comments (one per line)</div>
+ <textarea id="ta" placeholder="Paste comments here, one per line…" oninput="onIn(this.value)">${esc(S.raw)}</textarea>
+ <div class="between" style="margin-top:8px"><span class="sm mute" id="cnt">${n} comment${n===1?"":"s"} entered</span><button class="btn s" onclick="useSample()">Load sample comments (demo)</button></div>
+ ${S.homeErr?`<div class="warnbox">${esc(S.homeErr)}</div>`:""}
+ <div class="row"><button class="btn p" onclick="run()">Analyse comments</button><button class="btn" onclick="clearAll()">Clear</button></div></div>
+ <div class="card sm mute"><b style="color:var(--text)">🔒 Privacy reminder.</b> Please don't paste private or sensitive information such as full names, emails, phone numbers or addresses. Everything runs in your browser and nothing you paste is sent to any server. CommentMine doesn't connect to any social platform, so you copy comments in yourself.</div>`;
+}
+function onIn(v){S.raw=v;const n=parse(v).length;$("cnt").textContent=n+" comment"+(n===1?"":"s")+" entered"}
+function setP(p){S.platform=p;render()}
+function useSample(){S.raw=SAMPLE;S.homeErr="";render()}
+function clearAll(){S.raw="";S.homeErr="";render()}
+function newAnalysis(){S.status="idle";S.themes=[];S.raw="";S.demo=false;go("home")}
+
+function analyse(){
+ if(S.status!=="done")return `<div class="card center"><h3>No analysis yet</h3><p class="mute sm">Paste some comments on the Home screen, or load the sample comments, then tap Analyse.</p><button class="btn p" onclick="go('home')">Go to Home</button></div>`;
+ const g=S.themes.reduce((a,t)=>a+t.count,0),N=S.comments.length;
+ return `<div class="between"><h2>Your themes</h2><button class="btn s" onclick="newAnalysis()">+ New analysis</button></div>
+ <div class="sm mute" style="margin-top:6px">${esc(S.platform)} · ${S.demo?"Sample (demo) data · ":""}Basic local analysis (not AI)</div>
+ ${S.note?`<div class="warnbox">${esc(S.note)}</div>`:""}
+ <div class="stats"><div><b>${N}</b><span>comments</span></div><div><b>${S.themes.length}</b><span>themes</span></div><div><b>${N-g}</b><span>not grouped</span></div></div>
+ ${S.themes.length?S.themes.map(themeCard).join(""):`<div class="card center"><h3>No clear themes found</h3><p class="mute sm">These comments didn't share enough in common. Try pasting more comments (20+ works best).</p></div>`}
+ <p class="sm mute" style="margin-top:16px">Counts and quotes come straight from your comments. Video ideas are template suggestions, not AI-written. Priority only reflects how often a theme appears here; it is not a prediction of views.</p>`;
+}
+function themeCard(t,i){
+ const id=iid(t.idea),sv=S.saved.some(s=>s.id===id),pct=Math.round(t.count/S.comments.length*100);
+ return `<div class="card"><div class="between"><span class="pill lime">${TL[t.type]||"Topic"}</span><span class="pill ${t.count>1?"":"warn"}">${t.count>1?"Repeated pattern":"Only 1 comment"}</span></div>
+ <h3 style="margin-top:10px">${esc(t.title)}</h3>
+ <div class="sm mute" style="margin-top:4px">${t.count} of ${S.comments.length} comments · ${pct}%</div><div class="bar"><i style="width:${Math.max(pct,4)}%"></i></div>
+ <p class="sm" style="margin:0">${esc(t.summary)}</p>
+ <div class="lbl">From your comments</div>${t.examples.map(e=>`<div class="quote">“${esc(e)}”</div>`).join("")}
+ <div class="idea"><div class="between"><b>Video idea</b><span class="pill ${t.priority==="High"?"lime":""}">${t.priority} evidence</span></div>
+ <h3 style="margin-top:8px;font-size:17px">${esc(t.idea.topic)}</h3>
+ <div class="lbl">Opening hook</div><div class="hook">“${esc(t.idea.hook)}”</div>
+ <div class="lbl">Format</div><div>${esc(t.idea.format)}</div>
+ <div class="lbl">Why it may matter (template suggestion)</div><div class="sm">${esc(t.idea.why)}</div>
+ ${t.count<2?`<div class="sm mute" style="margin-top:8px">Based on a single comment, so treat it as a hunch.</div>`:""}
+ <div class="row"><button class="btn s ${sv?"on":""}" onclick="toggleSave(${i})">${sv?"✓ Saved · tap to remove":"Save idea"}</button><button class="btn s" onclick="copyT(${i})">Copy idea + hook</button></div></div></div>`;
+}
+const iid=i=>{let h=0;const s=i.topic+"|"+i.hook;for(let k=0;k<s.length;k++)h=(h*31+s.charCodeAt(k))|0;return "i"+(h>>>0)};
+const fmtIdea=i=>`${i.topic}\nHook: “${i.hook}”\nFormat: ${i.format}\nWhy: ${i.why}`;
+function toggleSave(i){const t=S.themes[i],id=iid(t.idea),x=S.saved.findIndex(s=>s.id===id);
+ if(x>-1){S.saved.splice(x,1);toast("Removed from Saved")}
+ else{S.saved.unshift({id,...t.idea,platform:S.platform,theme:t.title,count:t.count,total:S.comments.length,priority:t.priority});toast("Saved")}
+ persist=ls.set(S.saved);render()}
+function copyText(txt){
+ const fb=()=>{const a=document.createElement("textarea");a.value=txt;a.style.cssText="position:fixed;opacity:0";document.body.appendChild(a);a.select();let ok=false;try{ok=document.execCommand("copy")}catch(e){}a.remove();toast(ok?"Copied":"Copy failed – select and copy manually")};
+ try{navigator.clipboard.writeText(txt).then(()=>toast("Copied"),fb)}catch(e){fb()}}
+const copyT=i=>copyText(fmtIdea(S.themes[i].idea));
+const copyS=i=>copyText(fmtIdea(S.saved[i]));
+function rmS(i){S.saved.splice(i,1);persist=ls.set(S.saved);toast("Removed");render()}
+function saved(){
+ const note=persist?"":`<div class="warnbox">Saving to this device isn't available here, so your saved ideas will disappear when you close or refresh the page. Copy any you want to keep.</div>`;
+ if(!S.saved.length)return `<h2>Saved ideas</h2><div class="card center"><h3>Nothing saved yet</h3><p class="mute sm">When you find a video idea you like, tap “Save idea” and it will appear here.</p><button class="btn p" onclick="go('analyse')">Browse ideas</button></div>${note}`;
+ return `<h2>Saved ideas</h2><p class="sm mute" style="margin:6px 0 0">${S.saved.length} saved on this device.</p>${note}`+S.saved.map((s,i)=>`<div class="card"><div class="between"><span class="pill">${esc(s.platform)}</span><span class="pill lime">${s.priority} evidence</span></div>
+ <h3 style="margin-top:10px;font-size:17px">${esc(s.topic)}</h3><div class="lbl">Opening hook</div><div class="hook">“${esc(s.hook)}”</div>
+ <div class="lbl">Format</div><div>${esc(s.format)}</div><div class="lbl">Why it may matter</div><div class="sm">${esc(s.why)}</div>
+ <div class="sm mute" style="margin-top:8px">From theme: ${esc(s.theme)} (${s.count} of ${s.total} comments)</div>
+ <div class="row"><button class="btn s" onclick="copyS(${i})">Copy idea + hook</button><button class="btn s" onclick="rmS(${i})">Remove</button></div></div>`).join("");
+}
+
+function run(){
+ const c=parse(S.raw);
+ if(c.length<3){S.homeErr="Please enter at least 3 comments (one per line) so there's something to compare.";go("home");return}
+ S.homeErr="";S.comments=c;S.demo=S.raw.trim()===SAMPLE.trim();
+ runLocal("Basic local analysis, not AI. It groups comments that share keywords and fills fixed templates to suggest ideas, so it can miss meaning, slang or sarcasm. Check the quotes before trusting a theme.");
+ go("analyse");
+}
+function mk(title,type,items,summary,idea){
+ const ex=[...items].sort((a,b)=>a.length-b.length).slice(0,3);
+ return {title:String(title),type:TL[type]?type:"other",count:items.length,examples:ex.map(x=>x.slice(0,200)),summary:String(summary),idea:{topic:String(idea.topic),hook:String(idea.hook),why:String(idea.why||"Several people raised this, so a direct answer could be useful."),format:String(idea.format||"Tutorial")},priority:"Low"};
+}
+function sortT(a){const N=S.comments.length;a.forEach(t=>t.priority=t.count>=3&&t.count/N>=.15?"High":t.count>=2?"Medium":"Low");return a.sort((x,y)=>y.count-x.count)}
+
+const STOP=new Set("work works tips help tried keep keeps always sounds look looks show take long film what this that with have your what from they them were been will would could should about there their which when just like really very much more some than then also into only over such does doing make made need want please thanks thank video videos love great good".split(" "));
+const stem=w=>w.length>4&&w.endsWith("s")&&!w.endsWith("ss")?w.slice(0,-1):w;
+const typeOf=s=>/(doesn'?t work|not working|won'?t|can'?t|cannot|error|broken|stuck|problem|issue|keeps?\b|always|fail|didn'?t work|out of sync|blurry|echo)/i.test(s)?"problem":/\?|^(how|what|why|where|which|when|who|can you|could you|do you|does|is |are )/i.test(s.trim())&&!/^(can|could) you (do|make|show)/i.test(s.trim())?"question":/(please|part 2|can you (do|make|show)|could you (do|make|show)|would love|tutorial|more of|request)/i.test(s)?"request":/(love|amazing|great|awesome|thank|lol|haha|😍|😂|❤|🔥|following|saving|so good)/i.test(s)?"reaction":"other";
+function runLocal(msg){
+ const c=S.comments,info=c.map(x=>({x,t:typeOf(x),k:new Set((x.toLowerCase().match(/[a-z']{4,}/g)||[]).map(stem).filter(w=>!STOP.has(w)).map(w=>w.slice(0,5)))}));
+ const out=[];let pool=info.slice();
+ while(pool.length>1&&out.length<8){
+  const df={};pool.forEach(o=>o.k.forEach(k=>df[k]=(df[k]||0)+1));
+  const best=Object.entries(df).sort((a,b)=>b[1]-a[1]||b[0].length-a[0].length)[0];if(!best||best[1]<2)break;
+  const key=best[0],grp=pool.filter(o=>o.k.has(key));pool=pool.filter(o=>!grp.includes(o));
+  const wc={};grp.forEach(o=>(o.x.toLowerCase().match(/[a-z']{4,}/g)||[]).map(stem).filter(w=>w.slice(0,5)===key).forEach(w=>wc[w]=(wc[w]||0)+1));
+  const kw=Object.entries(wc).sort((a,b)=>b[1]-a[1]||b[0].length-a[0].length)[0][0];
+  const tc={};grp.forEach(o=>tc[o.t]=(tc[o.t]||0)+1);
+  const type=["problem","question","request","reaction","other"].sort((p,q)=>(tc[q]||0)-(tc[p]||0))[0];
+  const mix=Object.entries(tc).map(([t,n])=>n+" "+(TL[t]||"topic").toLowerCase()+(n>1?"s":"")).join(", ");
+  out.push(mk(`Comments mentioning “${kw}”`,type,grp.map(o=>o.x),`${grp.length} comments share the word “${kw}” (${mix}).`,localIdea(type,kw)));
+ }
+ S.themes=sortT(out);S.mode="local";S.status="done";S.note=msg;if(S.view==="analyse")render();
+}
+function localIdea(type,k){
+ const m={question:["Answering your questions about "+k,`You keep asking about ${k}, so here's the straight answer.`,"Q&A","Several people asked about this directly, so one clear answer could save repeat questions."],
+ request:["A "+k+" tutorial, as requested",`You asked for ${k}, so here it is step by step.`,"Tutorial","People asked for this explicitly, which suggests they'd welcome it."],
+ problem:["Fixing the "+k+" problem",`If ${k} keeps going wrong for you, try this.`,"Demonstration","Multiple people describe the same struggle, so a fix could help them."],
+ reaction:["Reacting to what you liked about "+k,`Loads of you commented on ${k}, so let's talk about it.`,"Response video","This got a reaction from several viewers."],
+ other:["A video about "+k,`Let's talk about ${k}.`,"Q&A","This topic came up more than once in the comments."]}[type];
+ return {topic:m[0],hook:m[1],format:m[2],why:m[3]};
+}
+render();
+</script></body></html>
